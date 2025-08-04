@@ -5,6 +5,8 @@ namespace App\Filament\Resources\PurchasesResource\Pages;
 use App\Filament\Resources\PurchasesResource;
 use Filament\Actions;
 use Filament\Resources\Pages\EditRecord;
+use App\Models\Products;
+use App\Models\Inventory;
 
 class EditPurchases extends EditRecord
 {
@@ -15,5 +17,33 @@ class EditPurchases extends EditRecord
         return [
             Actions\DeleteAction::make(),
         ];
+    }
+
+    protected function afterSave(): void
+    {
+        $purchase = $this->record;
+        
+        foreach ($purchase->purchaseDetails as $detail) {
+            $product = $detail->product;
+            if ($product) {
+                $product->productPrice = $detail->recommendedSalePrice;
+                $product->save();
+            }
+            
+            $inventory = Inventory::where('productId', $detail->productId)
+                ->where('countType', $detail->countType)
+                ->first();
+            
+            if ($inventory) {
+                $inventory->currentStock += $detail->quantity;
+                $inventory->save();
+            } else {
+                Inventory::create([
+                    'productId' => $detail->productId,
+                    'countType' => $detail->countType,
+                    'currentStock' => $detail->quantity,
+                ]);
+            }
+        }
     }
 }
