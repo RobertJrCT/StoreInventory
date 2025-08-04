@@ -47,7 +47,7 @@ class Products extends Model
      */
     public function stock()
     {
-        return $this->hasMany(Stock::class, 'productId');
+        return $this->hasMany(Inventory::class, 'productId');
     }
 
     /**

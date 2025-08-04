@@ -5,17 +5,24 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Stock extends Model
+class Inventory extends Model
 {
-    /** @use HasFactory<\Database\Factories\StockFactory> */
+    /** @use HasFactory<\Database\Factories\InventoryFactory> */
     use HasFactory;
 
     /**
-     * The primary key associated with the table.
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+
+    /**
+     * The "type" of the primary key ID.
      *
      * @var string
      */
-    protected $primaryKey = 'stockId';
+    protected $keyType = 'string';
 
     /**
      * The attributes that are mass assignable.
@@ -42,7 +49,7 @@ class Stock extends Model
     }
 
     /**
-     * Get the product that owns this stock record.
+     * Get the product that owns this inventory record.
      */
     public function product()
     {
