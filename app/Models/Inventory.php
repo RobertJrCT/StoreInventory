@@ -11,6 +11,13 @@ class Inventory extends Model
     use HasFactory;
 
     /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'inventory';
+
+    /**
      * Indicates if the IDs are auto-incrementing.
      *
      * @var bool

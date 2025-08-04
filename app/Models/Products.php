@@ -43,9 +43,9 @@ class Products extends Model
     }
 
     /**
-     * Get the stock record associated with the product.
+     * Get the inventory record associated with the product.
      */
-    public function stock()
+    public function inventory()
     {
         return $this->hasMany(Inventory::class, 'productId');
     }
