@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class InventoryResource extends Resource
@@ -18,6 +19,11 @@ class InventoryResource extends Resource
     protected static ?string $model = Inventory::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    public static function getRecordKey(Model $record): string
+    {
+        return $record->productId . '-' . $record->countType;
+    }
 
     public static function form(Form $form): Form
     {
@@ -42,7 +48,7 @@ class InventoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('productId')
+                Tables\Columns\TextColumn::make('product.productName')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('countType'),
@@ -62,13 +68,14 @@ class InventoryResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                // Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -83,7 +90,7 @@ class InventoryResource extends Resource
         return [
             'index' => Pages\ListInventories::route('/'),
             // 'create' => Pages\CreateInventory::route('/create'),
-            'edit' => Pages\EditInventory::route('/{record}/edit'),
+            // 'edit' => Pages\EditInventory::route('/{record}/edit'),
         ];
     }
 }

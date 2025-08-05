@@ -32,6 +32,46 @@ class Inventory extends Model
     protected $keyType = 'string';
 
     /**
+     * Get the composite key for the record.
+     *
+     * @return string
+     */
+    public function getKey()
+    {
+        return $this->productId . '-' . $this->countType;
+    }
+
+    /**
+     * Get the composite key name.
+     *
+     * @return string
+     */
+    public function getKeyName()
+    {
+        return 'productId-countType';
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKey()
+    {
+        return $this->productId . '-' . $this->countType;
+    }
+
+    /**
+     * Get the route key name for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'productId-countType';
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>

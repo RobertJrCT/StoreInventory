@@ -6,6 +6,7 @@ use App\Filament\Resources\PurchasesResource\Pages;
 use App\Filament\Resources\PurchasesResource\RelationManagers;
 use App\Models\Purchases;
 use Filament\Forms;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -25,15 +26,10 @@ class PurchasesResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('purchaseTotal')
                     ->numeric()
+                    ->default('0.00')
                     // ->disabled()
                     // ->dehydrated() // Guarda el valor del campo aunque este esté deshabilitado
-                    ->readOnly()
-                    ->reactive()
-                    ->afterStateHydrated(function (callable $get, callable $set) {
-                        // Calcular el total al cargar el formulario (por si ya hay datos)
-                        $set('purchaseTotal', collect($get('purchase-details'))
-                            ->sum(fn ($item) => $item['subtotalPDetail'] ?? 0));
-                    }),
+                    ->readOnly(),
                 Forms\Components\Repeater::make('purchase_details')
                     ->label('Detalle de compra')
                     ->relationship('purchaseDetails')
@@ -54,35 +50,36 @@ class PurchasesResource extends Resource
                         Forms\Components\TextInput::make('quantity')
                             ->numeric()
                             ->required()
-                            ->reactive()
-                            ->afterStateUpdated(function (callable $get, callable $set) {
-                                $set('subtotalPDetail', $get('quantity') * $get('unitPurchasePrice'));
+                            ->live()
+                            ->afterStateUpdated(function (callable $get, callable $set, $state) {
+                                static::updateSubtotalAndTotal($get, $set);
                             }),
                         Forms\Components\TextInput::make('unitPurchasePrice')
                             ->numeric()
                             ->required()
-                            ->reactive()
-                            ->afterStateUpdated(function (callable $get, callable $set) {
-                                $set('subtotalPDetail', $get('quantity') * $get('unitPurchasePrice'));
+                            ->live()
+                            ->afterStateUpdated(function (callable $get, callable $set, $state) {
+                                static::updateSubtotalAndTotal($get, $set);
                             }),
                         Forms\Components\TextInput::make('subtotalPDetail')
                             ->label('Subtotal')
                             ->numeric()
+                            ->default('0.00')
                             ->readOnly(),
                         Forms\Components\TextInput::make('recommendedSalePrice')
                             ->numeric()
                             ->required(),
                     ])
                     ->defaultItems(1)
+                    ->columns(4)
                     // ->createItemButtonLabel('Agregar producto')
                     ->addActionLabel('Agregar producto')
-                    ->columns(4)
-                    ->reactive()
                     ->afterStateUpdated(function (callable $get, callable $set) {
-                        // Esto ayuda a recalcular el total si se cambia algo dentro del repeater
-                        $set('purchaseTotal', collect($get('purchase-details'))
-                            ->sum(fn ($item) => $item['subtotalPDetail'] ?? 0));
+                        static::calculatePurchaseTotal($get, $set);
                     })
+                    ->deleteAction(fn (Action $action) => $action->after(function (callable $get, callable $set) {
+                        static::calculatePurchaseTotal($get, $set);
+                    })),
             ])->columns(1);
     }
 
@@ -129,5 +126,31 @@ class PurchasesResource extends Resource
             'create' => Pages\CreatePurchases::route('/create'),
             'edit' => Pages\EditPurchases::route('/{record}/edit'),
         ];
+    }
+
+    protected static function updateSubtotalAndTotal(callable $get, callable $set): void
+    {
+        $quantity = floatval($get('quantity') ?? 0);
+        $unitPurchasePrice = floatval($get('unitPurchasePrice') ?? 0);
+
+        $subtotal = $quantity * $unitPurchasePrice;
+        $truncatedSubtotal = bcdiv($subtotal, '1', 2);
+
+        $set('subtotalPDetail', $truncatedSubtotal);
+
+        static::calculatePurchaseTotal($get, $set);
+    }
+
+    protected static function calculatePurchaseTotal(callable $get, callable $set): void
+    {
+        $purchaseDetails = collect($get('../../purchase_details') ?? $get('purchase_details') ?? []);
+
+        $total = $purchaseDetails->sum(function ($detail) {
+            return floatval($detail['subtotalPDetail'] ?? 0);
+        });
+
+        $truncatedTotal = bcdiv($total, '1', 2);
+
+        $set('../../purchaseTotal', $truncatedTotal) ?? $set('purchaseTotal', $truncatedTotal);
     }
 }
