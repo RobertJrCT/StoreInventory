@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id('idSDetail');
             $table->unsignedBigInteger('saleId');
             $table->unsignedBigInteger('productId');
-            $table->enum('countType', ['unit','package'])->default('unit');
             $table->integer('quantity');
             $table->decimal('unitSalePrice', 10, 2);
             $table->decimal('subtotalSDetail',10,2)->nullable();

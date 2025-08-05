@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\InventoryResource\Pages;
 use App\Filament\Resources\InventoryResource\RelationManagers;
 use App\Models\Inventory;
+use App\Models\Products;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -20,23 +21,19 @@ class InventoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    public static function getRecordKey(Model $record): string
-    {
-        return $record->productId . '-' . $record->countType;
-    }
-
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\Select::make('productId')
-                    ->relationship('product', 'productName')
-                    ->required(),
-                Forms\Components\Select::make('countType')
-                    ->options([
-                        'unit' => 'Unidades',
-                        'package' => 'Paquetes',
-                    ])
+                    ->options(Products::select('productId', 'productName', 'presentationType')
+                        ->get()
+                        ->mapWithKeys(function ($product) {
+                            return [
+                                $product->productId => "{$product->productName} - {$product->presentationType}"
+                            ];
+                        })
+                    )
                     ->required(),
                 Forms\Components\TextInput::make('currentStock')
                     ->required()
@@ -51,7 +48,7 @@ class InventoryResource extends Resource
                 Tables\Columns\TextColumn::make('product.productName')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('countType'),
+                Tables\Columns\TextColumn::make('product.presentationType'),
                 Tables\Columns\TextColumn::make('currentStock')
                     ->numeric()
                     ->sortable(),
@@ -74,8 +71,7 @@ class InventoryResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('created_at', 'desc');
+            ]);
     }
 
     public static function getRelations(): array

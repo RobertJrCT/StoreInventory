@@ -15,7 +15,10 @@ return new class extends Migration
             $table->id('productId');
             $table->string('productName');
             $table->string('productDescription');
-            $table->decimal('productPrice', 10,2);
+            $table->string('presentationType');
+            $table->decimal('priceByFormat', 10,2);
+            // $table->enum('countType', ['units','packages'])->default('units');
+            // $table->integer('unitsPerPackage')->nullable();
             $table->timestampsTz();
         });
     }

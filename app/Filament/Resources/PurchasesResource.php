@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PurchasesResource\Pages;
 use App\Filament\Resources\PurchasesResource\RelationManagers;
+use App\Models\Products;
 use App\Models\Purchases;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
@@ -35,18 +36,15 @@ class PurchasesResource extends Resource
                     ->relationship('purchaseDetails')
                     ->schema([
                         Forms\Components\Select::make('productId')
-                            ->relationship('product', 'productName')
+                            ->options(Products::select('productId', 'productName', 'presentationType')
+                                ->get()
+                                ->mapWithKeys(function ($product) {
+                                    return [
+                                        $product->productId => "{$product->productName} - {$product->presentationType}"
+                                    ];
+                                })
+                            )
                             ->required(),
-                        Forms\Components\Select::make('countType')
-                            ->options([
-                                'unit' => 'Unidades',
-                                'package' => 'Paquetes',
-                            ])
-                            ->required()
-                            ->live(),
-                        Forms\Components\TextInput::make('unitsPerPackage')
-                            ->numeric()
-                            ->visible(fn ($get) => $get('countType') === 'package'),
                         Forms\Components\TextInput::make('quantity')
                             ->numeric()
                             ->required()
@@ -67,11 +65,10 @@ class PurchasesResource extends Resource
                             ->default('0.00')
                             ->readOnly(),
                         Forms\Components\TextInput::make('recommendedSalePrice')
-                            ->numeric()
-                            ->required(),
+                            ->numeric(),
                     ])
                     ->defaultItems(1)
-                    ->columns(4)
+                    ->columns(3)
                     // ->createItemButtonLabel('Agregar producto')
                     ->addActionLabel('Agregar producto')
                     ->afterStateUpdated(function (callable $get, callable $set) {

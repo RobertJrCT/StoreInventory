@@ -29,7 +29,10 @@ class ProductsResource extends Resource
                 Forms\Components\TextInput::make('productDescription')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('productPrice')
+                Forms\Components\TextInput::make('presentationType')
+                    ->required()
+                    ->maxLength(255),
+                Forms\Components\TextInput::make('priceByFormat')
                     ->required()
                     ->numeric(),
             ]);
@@ -40,10 +43,13 @@ class ProductsResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('productName')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('productDescription')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('productPrice')
+                Tables\Columns\TextColumn::make('presentationType')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('priceByFormat')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')

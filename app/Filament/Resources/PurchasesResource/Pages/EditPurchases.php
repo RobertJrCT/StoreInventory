@@ -25,14 +25,12 @@ class EditPurchases extends EditRecord
         
         foreach ($purchase->purchaseDetails as $detail) {
             $product = $detail->product;
-            if ($product) {
-                $product->productPrice = $detail->recommendedSalePrice;
+            if ($product && $detail->recommendedSalePrice>0) {
+                $product->priceByFormat = $detail->recommendedSalePrice;
                 $product->save();
             }
             
-            $inventory = Inventory::where('productId', $detail->productId)
-                ->where('countType', $detail->countType)
-                ->first();
+            $inventory = Inventory::where('productId', $detail->productId)->first();
             
             if ($inventory) {
                 $inventory->currentStock += $detail->quantity;
@@ -40,7 +38,6 @@ class EditPurchases extends EditRecord
             } else {
                 Inventory::create([
                     'productId' => $detail->productId,
-                    'countType' => $detail->countType,
                     'currentStock' => $detail->quantity,
                 ]);
             }

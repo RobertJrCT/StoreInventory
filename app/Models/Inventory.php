@@ -25,52 +25,12 @@ class Inventory extends Model
     public $incrementing = false;
 
     /**
-     * The "type" of the primary key ID.
+     * The primary key associated with the table.
      *
      * @var string
      */
-    protected $keyType = 'string';
-
-    /**
-     * Get the composite key for the record.
-     *
-     * @return string
-     */
-    public function getKey()
-    {
-        return $this->productId . '-' . $this->countType;
-    }
-
-    /**
-     * Get the composite key name.
-     *
-     * @return string
-     */
-    public function getKeyName()
-    {
-        return 'productId-countType';
-    }
-
-    /**
-     * Get the route key for the model.
-     *
-     * @return string
-     */
-    public function getRouteKey()
-    {
-        return $this->productId . '-' . $this->countType;
-    }
-
-    /**
-     * Get the route key name for the model.
-     *
-     * @return string
-     */
-    public function getRouteKeyName()
-    {
-        return 'productId-countType';
-    }
-
+    protected $primaryKey = 'productId';
+    
     /**
      * The attributes that are mass assignable.
      *
@@ -78,7 +38,6 @@ class Inventory extends Model
      */
     protected $fillable = [
         'productId',
-        'countType',
         'currentStock',
     ];
 
