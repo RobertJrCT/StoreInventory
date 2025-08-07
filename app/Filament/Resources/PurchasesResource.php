@@ -46,8 +46,13 @@ class PurchasesResource extends Resource
                             )
                             ->required(),
                         Forms\Components\TextInput::make('quantity')
-                            ->numeric()
+                            ->integer()
                             ->required()
+                            ->minValue(1)
+                            ->extraAttributes([
+                                'inputmode' => 'numeric',
+                                'onkeydown' => "if (!['Backspace','Tab','ArrowLeft','ArrowRight','Delete'].includes(event.key) && !/^[0-9]$/.test(event.key)) event.preventDefault();",
+                            ])
                             ->live()
                             ->afterStateUpdated(function (callable $get, callable $set, $state) {
                                 static::updateSubtotalAndTotal($get, $set);
